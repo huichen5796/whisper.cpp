@@ -216,18 +216,14 @@ ifdef WHISPER_OPENBLAS
 endif
 
 ifdef WHISPER_CUBLAS
-	ifeq ($(shell expr $(NVCC_VERSION) \>= 11.6), 1)
-		CUDA_ARCH_FLAG ?= native
-	else
-		CUDA_ARCH_FLAG ?= all
-	endif
+	CUDA_ARCH_FLAG ?= -gencode arch=compute_75,code=sm_75
 
 	CFLAGS      += -DGGML_USE_CUBLAS -I/usr/local/cuda/include -I/opt/cuda/include -I$(CUDA_PATH)/targets/$(UNAME_M)-linux/include
 	CXXFLAGS    += -DGGML_USE_CUBLAS -I/usr/local/cuda/include -I/opt/cuda/include -I$(CUDA_PATH)/targets/$(UNAME_M)-linux/include
 	LDFLAGS     += -lcuda -lcublas -lculibos -lcudart -lcublasLt -lpthread -ldl -lrt -L/usr/local/cuda/lib64 -L/opt/cuda/lib64 -L$(CUDA_PATH)/targets/$(UNAME_M)-linux/lib -L/usr/lib/wsl/lib
 	WHISPER_OBJ += ggml-cuda.o
 	NVCC        = nvcc
-	NVCCFLAGS   = --forward-unknown-to-host-compiler -arch=$(CUDA_ARCH_FLAG)
+	NVCCFLAGS   = --forward-unknown-to-host-compiler $(CUDA_ARCH_FLAG)
 
 ggml-cuda.o: ggml-cuda.cu ggml-cuda.h
 	$(NVCC) $(NVCCFLAGS) $(CXXFLAGS) -Wno-pedantic -c $< -o $@
